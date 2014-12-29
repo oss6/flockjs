@@ -27,9 +27,19 @@ Vector.prototype.substract = function (vec) {
     return this;
 };
 
+Vector.substract = function (v1, v2) {
+    return new Vector(v1.x - v2.x, v1.y - v2.y);
+};
+
 Vector.prototype.divide = function (vec) {
     this.x /= vec.x;
     this.y /= vec.y;
+    return this;
+};
+
+Vector.prototype.divideScalar = function (scalar) {
+    this.x /= scalar;
+    this.y /= scalar;
     return this;
 };
 
@@ -76,7 +86,7 @@ Vector.prototype.isZero = function() {
 	return this.x === 0 && this.y === 0;
 };
 
-Victor.prototype.distance = function (vec) {
+Vector.prototype.distance = function (vec) {
     var dx = this.x - vec.x,
         dy = this.y - vec.y;
     
