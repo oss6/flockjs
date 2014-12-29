@@ -5,7 +5,7 @@ function Vector (x, y) {
     
 	this.x = x || 0;
 	this.y = y || 0;
-};
+}
 
 Vector.prototype.magnitude = function () {
     return Math.sqrt((this.x * this.x) + (this.y * this.y));
@@ -19,6 +19,35 @@ Vector.prototype.add = function (vec) {
     this.x += vec.x;
     this.y += vec.y;
     return this;
+};
+
+Vector.prototype.invertX = function () {
+	this.x *= -1;
+	return this;
+};
+
+Vector.prototype.invertY = function () {
+	this.y *= -1;
+	return this;
+};
+
+
+Vector.prototype.horizontalAngle = function () {
+	return Math.atan2(this.y, this.x);
+};
+
+Vector.prototype.verticalAngle = function () {
+	return Math.atan2(this.x, this.y);
+};
+
+Vector.prototype.rotate = function (angle) {
+	var nx = (this.x * Math.cos(angle)) - (this.y * Math.sin(angle));
+	var ny = (this.x * Math.sin(angle)) + (this.y * Math.cos(angle));
+
+	this.x = nx;
+	this.y = ny;
+
+	return this;
 };
 
 Vector.prototype.substract = function (vec) {

@@ -1,7 +1,7 @@
 function Boid (position) {
-    var NEIGHBOURS_RADIUS = 30,
+    var NEIGHBOURS_RADIUS = 100,
         DESIRED_SEPARATION = 10,
-        MAX_SPEED = 50;
+        MAX_SPEED = 20;
     
     this.position = position;
     this.velocity = new Vector();
@@ -135,8 +135,7 @@ function Boid (position) {
         var v1 = this.cohere(neighbours),   // Rule 1
             v2 = this.separate(neighbours), // Rule 2
             v3 = this.align(neighbours);  // Rule 3
-
-        // Check these
+        
         return v1.add(v2).add(v3);
     };
 
@@ -149,8 +148,8 @@ function Boid (position) {
 
     this.render = function (ctx) {
         ctx.beginPath();
-        ctx.arc(this.position.x, this.position.y, 20, 0, 2 * Math.PI, false);
+        ctx.arc(this.position.x, this.position.y, 10, 0, 2 * Math.PI, false);
         ctx.fillStyle = 'white';
         ctx.fill();
     };
-};
+}

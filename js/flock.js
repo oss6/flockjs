@@ -5,7 +5,7 @@ var Flock = (function (undefined) {
         FPS = 30,
         
         boids = [],
-        INITIAL_BOIDS = 20;
+        INITIAL_BOIDS = 100;
     
     var set_size = function (width, height) {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -19,7 +19,8 @@ var Flock = (function (undefined) {
     
     var init_boids = function () {
         for (var i = 0; i < INITIAL_BOIDS; i++) {
-            var boid = new Boid(new Vector(canvas.width / 2, canvas.height / 2)); // position
+            var start = new Vector().randomize(new Vector(0, 0), new Vector(canvas.width, canvas.height)),
+                boid = new Boid(start);
             
             boids.push(boid);
         }
@@ -30,7 +31,17 @@ var Flock = (function (undefined) {
         
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (i = 0; i < len; i++) {
-            var boid = boids[i];
+            var boid = boids[i],
+                x = boid.position.x,
+                y = boid.position.y;
+            
+            if (x <= 0 || x >= canvas.width) {
+                boid.position.invertX();
+            }
+            
+            if (y <= 0 || y >= canvas.height) {
+                boid.position.invertY();
+            }
             
             // Perform step and render
             boid.step(boids);
