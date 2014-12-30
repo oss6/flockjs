@@ -1,155 +1,171 @@
-function Boid (position) {
-    var NEIGHBOURS_RADIUS = 100,
-        DESIRED_SEPARATION = 10,
-        MAX_SPEED = 20;
+function Boid (position, ctx) {
+    var angle = random(0, 2 * Math.PI);
     
+    // Vectors
     this.position = position;
-    this.velocity = new Vector();
-
-    this.steer_to = function (target) {
-        var desired = Vector.substract(target, this.position),
-            d = desired.magnitude(),
-            steer;
-        
-        if (d > 0) {
-            desired.normalize();
-            
-            if (d < 100.0)
-                desired.multiplyScalar(MAX_SPEED * (d / 100.0));
-            else
-                desired.multiplyScalar(MAX_SPEED);
-            
-            steer = desired.substract(this.velocity);
-        }
-        else {
-            steer = new Vector();
-        }
-        
-        return steer;
-        /*# A vector pointing from the location to the target
-        desired = Vector.subtract(target, @location)
-        # Distance from the target is the magnitude of the vector
-        d = desired.magnitude()
-
-        # If the distance is greater than 0, calc steering
-        # (otherwise return zero vector)
-        if d > 0
-          desired.normalize()
-
-          # Two options for desired vector magnitude
-          # (1 -- based on distance, 2 -- maxspeed)
-          if d < 100.0
-            # This damping is arbitrary
-            desired.multiply(MAX_SPEED*(d/100.0))
-          else
-            desired.multiply(MAX_SPEED)
-
-          # Steering = Desired minus Velocity
-          steer = desired.subtract(@velocity)
-          # Limit to maximum steering force
-          steer.limit(MAX_FORCE)
-        else
-          steer = new Vector(0,0)
-
-        return steer*/
-    };
+    this.velocity = new Vector(Math.cos(angle), Math.sin(angle));
+    this.acceleration = new Vector();
     
-    this.cohere = function (neighbours) {
-        var sum = new Vector(),
-            count = 0,
-            len = neighbours.length,
-            i;
-
-        for (i = 0; i < len; i++) {
-            var b = neighbours[i],
-                d = this.position.distance(b.position);
-
-            if (d > 0 && d < NEIGHBOURS_RADIUS) {
-                sum.add(b.position);
-                count++;
-            }
-        }
-
-        if (count > 0)
-            return this.steer_to(sum.divide(count)); // fix
-        else
-            return sum;
-    };
+    this.r = 2.0;
+    this.maxforce = 0.03;   // Maximum steering force
+    this.maxspeed = 2.0;    // Maximum speed
     
-    this.align = function (neighbours) {
-        var mean = new Vector(),
-            count = 0,
-            len = neighbours.length,
-            i;
-
-        for (i = 0; i < len; i++) {
-            var b = neighbours[i],
-                d = this.position.distance(b.position);
-
-            if (d > 0 && d < NEIGHBOURS_RADIUS) {
-                mean.add(b.velocity);
-                count++;
-            }
-        }
-
-        if (count > 0)
-            mean.divideScalar(count);
-
-        return mean; // Vector.divideScalar(mean.substract(this.velocity), 8); // or just mean
-    };
-
-    this.separate = function (neighbours) {
-        var mean = new Vector(),
-            count = 0,
-            len = neighbours.length,
-            i;
-
-        for (i = 0; i < len; i++) {
-            var b = neighbours[i],
-                d = this.position.distance(b.position);
-
-            if (d > 0 && d < DESIRED_SEPARATION) {
-                mean.add(Vector.substract(this.position, b.position).normalize().divideScalar(d));
-                count++;
-            }
-        }
-
-        if (count > 0)
-            mean.divideScalar(count);
-        
-        return mean;
-        /*mean = new Vector
-        count = 0
-        for boid in neighbours
-          d = @location.distance(boid.location)
-          if d > 0 and d < DESIRED_SEPARATION
-            # Normalized, weighted by distance vector pointing away from the neighbour
-            mean.add Vector.subtract(@location,boid.location).normalize().divide(d)
-            count++
-
-        mean.divide(count) if count > 0
-        mean*/
-    };
-
-    this.flock = function (neighbours) {
-        var v1 = this.cohere(neighbours),   // Rule 1
-            v2 = this.separate(neighbours), // Rule 2
-            v3 = this.align(neighbours);  // Rule 3
-        
-        return v1.add(v2).add(v3);
-    };
-
-    this.step = function (neighbours) {
-        var acceleration = this.flock(neighbours);
-        
-        this.velocity.add(acceleration);
-        this.position.add(this.velocity);
-    };
-
-    this.render = function (ctx) {
-        ctx.beginPath();
-        ctx.arc(this.position.x, this.position.y, 10, 0, 2 * Math.PI, false);
-        ctx.fillStyle = 'white';
-        ctx.fill();
-    };
+    this.ctx = ctx;
+    this.width = ctx.canvas.width;
+    this.height = ctx.canvas.height;
 }
+
+Boid.prototype.run = function (boids) {
+    this.flock(boids);
+    this.update();
+    this.borders();
+    this.render();
+};
+
+Boid.prototype.apply_force = function (force) {
+    this.acceleration.add(force);
+    return this;
+};
+
+Boid.prototype.flock = function (boids) {
+    var sep = this.separate(boids), // Separation
+        ali = this.align(boids),    // Alignment
+        coh = this.cohere(boids);   // Cohesion
+    
+    // Arbitrarily weight these forces
+    sep.multiplyScalar(1.5);
+    ali.multiplyScalar(1.0);
+    coh.multiplyScalar(1.0);
+    
+    // Add the force vectors to acceleration
+    this.apply_force(sep).apply_force(ali).apply_force(coh);
+};
+
+// Method to update location
+Boid.prototype.update = function () {
+    // Update velocity
+    this.velocity.add(this.acceleration);
+    // Limit speed
+    this.velocity.limit(this.maxspeed, 0.9);
+    this.position.add(this.velocity);
+    // Reset accelertion to 0 each cycle
+    this.acceleration.multiplyScalar(0);
+};
+
+Boid.prototype.borders = function () {
+    if (this.position.x < -this.r) this.position.x = this.width + this.r;
+    if (this.position.y < -this.r) this.position.y = this.height + this.r;
+    if (this.position.x > this.width + this.r) this.position.x = -this.r;
+    if (this.position.y > this.height + this.r) this.position.y = -this.r;
+};
+
+Boid.prototype.steer_to = function (target) {
+    var desired = Vector.substract(target, this.position);
+    desired.normalize();
+    desired.multiplyScalar(this.maxspeed);
+    
+    var steer = Vector.substract(desired, this.velocity);
+    steer.limit(this.maxforce, 0.90);
+    return steer;
+};
+
+Boid.prototype.separate = function (boids) {
+    var desiredseparation = 25.0,
+        steer = new Vector(),
+        count = 0,
+        len = boids.length,
+        i;
+    
+    for (i = 0; i < len; i++) {
+        var other = boids[i],
+            d = this.position.distance(other.position);
+        
+        if (d > 0 && d < desiredseparation) {
+            var diff = Vector.substract(this.position, other.position);
+            diff.normalize();
+            diff.divideScalar(d);
+            steer.add(diff);
+            count++;
+        }
+    }
+    
+    // Average
+    if (count > 0) {
+        steer.divideScalar(count);
+    }
+
+    // As long as the vector is greater than 0
+    if (steer.magnitude() > 0) {
+      // Implement Reynolds: Steering = Desired - Velocity
+      steer.normalize();
+      steer.multiplyScalar(this.maxspeed);
+      steer.substract(this.velocity);
+      steer.limit(this.maxforce, 0.90);
+    }
+    return steer;
+};
+
+Boid.prototype.align = function (boids) {
+    var neighbourdist = 50,
+        sum = new Vector(),
+        count = 0,
+        len = boids.length,
+        i;
+    
+    for (i = 0; i < len; i++) {
+        var other = boids[i],
+            d = this.position.distance(other.position);
+        
+        if (d > 0 && d < neighbourdist) {
+            sum.add(other.velocity);
+            count++;
+        }
+    }
+    
+    if (count > 0) {
+      sum.divideScalar(count);
+        
+      // Implement Reynolds: Steering = Desired - Velocity
+      sum.normalize();
+      sum.multiplyScalar(this.maxspeed);
+      var steer = Vector.substract(sum, this.velocity);
+      steer.limit(this.maxforce, 0.90);
+      return steer;
+    } 
+    else {
+        return new Vector();
+    }
+};
+
+Boid.prototype.cohere = function (boids) {
+    var neighbourdist = 50,
+        sum = new Vector(),
+        count = 0,
+        len = boids.length,
+        i;
+    
+    for (i = 0; i < len; i++) {
+        var other = boids[i],
+            d = this.position.distance(other.position);
+        
+        if (d > 0 && d < neighbourdist) {
+            sum.add(other.position);
+            count++;
+        }
+    }
+    
+    if (count > 0) {
+        sum.divideScalar(count);
+        return this.steer_to(sum);  // Steer towards the location
+    } 
+    else {
+        return new Vector();
+    }
+};
+
+Boid.prototype.render = function () {
+    this.ctx.beginPath();
+    this.ctx.arc(this.position.x, this.position.y, 5, 0, 2 * Math.PI, false);
+    this.ctx.fillStyle = 'white';
+    this.ctx.fill();
+};

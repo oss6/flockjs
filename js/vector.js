@@ -78,6 +78,12 @@ Vector.prototype.multiply = function (vec) {
     return this;
 };
 
+Vector.prototype.multiplyScalar = function (scalar) {
+    this.x *= scalar;
+    this.y *= scalar;
+    return this;
+};
+
 Vector.prototype.normalize = function () {
     var length = this.magnitude();
 
@@ -85,7 +91,7 @@ Vector.prototype.normalize = function () {
         this.x = 1;
 		this.y = 0;
 	} else {
-		this.divide(Vector(length, length));
+		this.divide(new Vector(length, length));
 	}
 	return this;
 };
@@ -120,6 +126,12 @@ Vector.prototype.distance = function (vec) {
         dy = this.y - vec.y;
     
     return Math.sqrt(dx * dx + dy * dy);
+};
+
+Vector.prototype.limit = function (max, factor) {
+	if (Math.abs(this.x) > max) { this.x *= factor; }
+	if (Math.abs(this.y) > max) { this.y *= factor; }
+	return this;
 };
 
 function random (min, max) {
