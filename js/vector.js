@@ -128,12 +128,12 @@ Vector.prototype.distance = function (vec) {
     return Math.sqrt(dx * dx + dy * dy);
 };
 
-Vector.prototype.limit = function (max, factor) {
-	if (Math.abs(this.x) > max) { this.x *= factor; }
-	if (Math.abs(this.y) > max) { this.y *= factor; }
+Vector.prototype.limit = function (max) {
+    this.normalize();
+    this.multiplyScalar(max);
+    
+	/*if (Math.abs(this.x) > max) { this.x *= factor; }
+	if (Math.abs(this.y) > max) { this.y *= factor; }*/
+    
 	return this;
 };
-
-function random (min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-}

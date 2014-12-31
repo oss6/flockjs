@@ -46,7 +46,7 @@ Boid.prototype.update = function () {
     // Update velocity
     this.velocity.add(this.acceleration);
     // Limit speed
-    this.velocity.limit(this.maxspeed, 0.9);
+    this.velocity.limit(this.maxspeed);
     this.position.add(this.velocity);
     // Reset accelertion to 0 each cycle
     this.acceleration.multiplyScalar(0);
@@ -65,7 +65,7 @@ Boid.prototype.steer_to = function (target) {
     desired.multiplyScalar(this.maxspeed);
     
     var steer = Vector.substract(desired, this.velocity);
-    steer.limit(this.maxforce, 0.90);
+    steer.limit(this.maxforce);
     return steer;
 };
 
@@ -100,7 +100,7 @@ Boid.prototype.separate = function (boids) {
       steer.normalize();
       steer.multiplyScalar(this.maxspeed);
       steer.substract(this.velocity);
-      steer.limit(this.maxforce, 0.90);
+      steer.limit(this.maxforce);
     }
     return steer;
 };
@@ -129,7 +129,7 @@ Boid.prototype.align = function (boids) {
       sum.normalize();
       sum.multiplyScalar(this.maxspeed);
       var steer = Vector.substract(sum, this.velocity);
-      steer.limit(this.maxforce, 0.90);
+      steer.limit(this.maxforce);
       return steer;
     } 
     else {
@@ -164,8 +164,23 @@ Boid.prototype.cohere = function (boids) {
 };
 
 Boid.prototype.render = function () {
+    // Draw a triangle rotated in the direction of velocity
+    var theta = this.velocity.horizontalAngle() + radians(90),
+        r = this.r;
+    
+    this.ctx.fillStyle = '#999';
+    this.ctx.strokeStyle = '#fff';
+    
+    this.ctx.save();
+    this.ctx.translate(this.position.x, this.position.y);
+    this.ctx.rotate(theta);
+    
     this.ctx.beginPath();
-    this.ctx.arc(this.position.x, this.position.y, 5, 0, 2 * Math.PI, false);
-    this.ctx.fillStyle = 'white';
+    this.ctx.moveTo(0, -r * 2);
+    this.ctx.lineTo(-r, r * 2)
+    this.ctx.lineTo(r, r * 2);
     this.ctx.fill();
+    this.ctx.stroke();
+    this.ctx.closePath();
+    this.ctx.restore();
 };
