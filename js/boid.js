@@ -1,5 +1,9 @@
+// boid.js
+// Description: Boid
+// Author: Ossama Edbali
+
 function Boid (position, ctx) {
-    var angle = random(0, 2 * Math.PI);
+    var angle = $u.random(0, 2 * Math.PI);
     
     // Vectors
     this.position = position;
@@ -156,7 +160,7 @@ Boid.prototype.cohere = function (boids) {
     
     if (count > 0) {
         sum.divideScalar(count);
-        return this.steer_to(sum);  // Steer towards the location
+        return this.steer_to(sum); 
     } 
     else {
         return new Vector();
@@ -165,7 +169,7 @@ Boid.prototype.cohere = function (boids) {
 
 Boid.prototype.render = function () {
     // Draw a triangle rotated in the direction of velocity
-    var theta = this.velocity.horizontalAngle() + radians(90),
+    var theta = this.velocity.horizontalAngle() + $u.rad(90),
         r = this.r;
     
     this.ctx.fillStyle = '#999';

@@ -16,6 +16,10 @@ var FlockModel = (function (undefined) {
         set_size(window.innerWidth, window.innerHeight);
     };
     
+    var click_handler = function (e) {
+        flock.add_boid(new Boid(new Vector(e.clientX, e.clientY), ctx));
+    };
+    
     var init_boids = function () {
         flock = new Flock();
         
@@ -40,6 +44,7 @@ var FlockModel = (function (undefined) {
             
             // Event listeners
             window.addEventListener('resize', resize_handler, false);
+            window.addEventListener('click', click_handler, false);
             
             // Set full size and start main loop
             set_size(window.innerWidth, window.innerHeight);

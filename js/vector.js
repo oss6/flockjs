@@ -106,14 +106,14 @@ Vector.prototype.randomize = function (topLeft, bottomRight) {
 Vector.prototype.randomizeX = function (topLeft, bottomRight) {
 	var min = Math.min(topLeft.x, bottomRight.x);
 	var max = Math.max(topLeft.x, bottomRight.x);
-	this.x = random(min, max);
+	this.x = $u.random(min, max);
 	return this;
 };
 
 Vector.prototype.randomizeY = function (topLeft, bottomRight) {
 	var min = Math.min(topLeft.y, bottomRight.y);
 	var max = Math.max(topLeft.y, bottomRight.y);
-	this.y = random(min, max);
+	this.y = $u.random(min, max);
 	return this;
 };
 
@@ -131,9 +131,5 @@ Vector.prototype.distance = function (vec) {
 Vector.prototype.limit = function (max) {
     this.normalize();
     this.multiplyScalar(max);
-    
-	/*if (Math.abs(this.x) > max) { this.x *= factor; }
-	if (Math.abs(this.y) > max) { this.y *= factor; }*/
-    
 	return this;
 };
