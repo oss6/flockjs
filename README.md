@@ -10,4 +10,6 @@ You can click on the window to add more boids and see them interacting with the 
 What's next
 -----------
 In the next release there will be:
-- w
+- Goal setting
+- External factors such as wind or current
+- Anti-flocking behaviour
